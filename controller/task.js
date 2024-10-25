@@ -52,3 +52,21 @@ exports.deleteAllTasks = asyncHandler(async (req, res) => {
     const task = await Model.deleteMany();
     res.status(200).json(task);
 })
+
+// Update task status to 'Complete'
+exports.updateTaskStatus = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updatedTask = await Model.findByIdAndUpdate(
+        id,
+        { status: "Complete" },
+        { new: true }
+      );
+      if (!updatedTask) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.status(200).json(updatedTask);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating task status", error });
+    }
+  };

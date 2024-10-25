@@ -10,6 +10,7 @@ router.get('/:id', Controller.getTask);
 router.put('/:id', Controller.updateTask);
 router.delete('/:id', Controller.deleteTask);
 router.delete('/', Controller.deleteAllTasks);
+router.put("/:id/complete", Controller.updateTaskStatus);
 router.get('/admins', async (req, res) => {
     try {
       const admins = await Admin.find({}, 'name email'); 
