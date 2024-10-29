@@ -8,7 +8,7 @@ const taskSchema = new Schema({
     },
     name:{type: String, required: true},
     email: { type: String, required: true },
-    description: { type: String, required: true },
+    description: [{ type: String, required: true }],
     project:{type: String, required: true},
     priority: { type: String, required: true },
     title:{type: String, required: true},

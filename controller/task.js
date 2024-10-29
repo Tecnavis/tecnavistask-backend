@@ -70,3 +70,26 @@ exports.updateTaskStatus = async (req, res) => {
       res.status(500).json({ message: "Error updating task status", error });
     }
   };
+
+
+  exports.addDescriptionToTask = async (req, res) => {
+    try {
+        const { taskId, newDescription } = req.body;
+
+        // Find the task and update the description array
+        const task = await Model.findByIdAndUpdate(
+            taskId,
+            { $push: { description: newDescription } },
+            { new: true } // Return the updated document
+        );
+
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        res.status(200).json(task);
+    } catch (error) {
+        console.error("Error adding description:", error);
+        res.status(500).json({ message: "Error adding description", error });
+    }
+};
