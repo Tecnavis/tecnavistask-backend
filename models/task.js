@@ -8,8 +8,8 @@ const taskSchema = new Schema({
     },
     name: { type: String, required: true },
     email: { type: String, required: true },
-    task: [{ type: String, required: true }], // Array of strings
-    project: { type: String, required: true },
+    task: [{ type: String, required: true }],
+    project: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
     priority: { type: String, required: true },
     status: { type: String, required: true },
     date: { type: Date, default: Date.now },

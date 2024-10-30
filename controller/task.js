@@ -6,7 +6,7 @@ exports.createTask = asyncHandler(async (req, res) => {
   const { email, task, project, priority, status, date, name, endDate } = req.body;
   
   try {
-    const tasks = await Model.create({ 
+    const newTask = await Model.create({ 
       email, 
       task, 
       project, 
@@ -17,12 +17,13 @@ exports.createTask = asyncHandler(async (req, res) => {
       endDate 
     });
   
-    res.status(200).json(tasks);
+    res.status(200).json(newTask); // Return the created task
   } catch (error) {
     console.error("Error creating task:", error);
     res.status(500).json({ message: "Error creating task" });
   }
 });
+
 
 // Get all tasks
 exports.getAllTasks = asyncHandler(async (req, res) => {
