@@ -10,6 +10,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var admin = require('./routes/admins')
 var task = require('./routes/task')
+var project = require('./routes/project')
 var notification = require('./routes/notification')
 connectDB()
 
@@ -36,6 +37,7 @@ app.use('/users', usersRouter);
 app.use('/admin', admin);
 app.use('/task', task);
 app.use('/notification', notification);
+app.use('/project', project);
 
 
 

@@ -3,22 +3,26 @@ const asyncHandler = require("express-async-handler");
 
 
 exports.createTask = asyncHandler(async (req, res) => {
-    const { email, description, project, priority, title, status, date, name, endDate } = req.body;
-    const task = await Model.create({ 
+  const { email, task, project, priority, status, date, name, endDate } = req.body;
+  
+  try {
+    const tasks = await Model.create({ 
       email, 
-      description, 
+      task, 
       project, 
       priority, 
       name,  
-      title, 
       status, 
       date, 
       endDate 
     });
   
-    res.status(200).json(task);
-  });
-  
+    res.status(200).json(tasks);
+  } catch (error) {
+    console.error("Error creating task:", error);
+    res.status(500).json({ message: "Error creating task" });
+  }
+});
 
 // Get all tasks
 exports.getAllTasks = asyncHandler(async (req, res) => {
