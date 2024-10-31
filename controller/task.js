@@ -1,5 +1,32 @@
 const Model = require('../models/task');
 const asyncHandler = require("express-async-handler");
+// Get all tasks
+exports.getAllTasks = asyncHandler(async (req, res) => {
+  const tasks = await Model.find().populate('project'); // Ensure this is correct
+  res.status(200).json(tasks);
+});
+
+
+// Modify getTasksByProjectId to sort tasks by priority or date
+exports.getTasksByProjectId = async (req, res) => {
+  const { projectId } = req.params;
+
+  try {
+      const tasks = await Model.find({ project: projectId })
+          .populate("staff")
+          .populate("project")
+          .sort({ priority: 1, date: 1 }); // Sort by priority (ascending) and then by date (ascending)
+
+      if (!tasks || tasks.length === 0) {
+          return res.status(404).json({ message: "No tasks found for this project." });
+      }
+
+      res.status(200).json(tasks);
+  } catch (error) {
+      console.error("Error fetching tasks:", error);
+      res.status(500).json({ message: "An error occurred while fetching tasks." });
+  }
+};
 
 
 const generateTaskId = async () => {
@@ -41,12 +68,6 @@ try {
 });
 
 
-// Get all tasks
-exports.getAllTasks = asyncHandler(async (req, res) => {
-    const tasks = await Model.find();
-    res.status(200).json(tasks);
-})
-
 // Get single task
 exports.getTask = asyncHandler(async (req, res) => {
     const task = await Model.findById(req.params.id);
@@ -55,11 +76,11 @@ exports.getTask = asyncHandler(async (req, res) => {
 
 // Update task
 exports.updateTask = asyncHandler(async (req, res) => {
-    const { staff, email, description, project, priority, title, status, date, endDate } = req.body;
-    const task = await Model.findByIdAndUpdate(req.params.id, { staff, email, description, project, priority, title, status, date, endDate }, {
+    const { staff, email, task, project, priority, status, date, endDate } = req.body;
+    const tasks = await Model.findByIdAndUpdate(req.params.id, { staff, email, task, project, priority, status, date, endDate }, {
         new: true
     });
-    res.status(200).json(task);
+    res.status(200).json(tasks);
 })
 
 // Delete task

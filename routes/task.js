@@ -5,6 +5,8 @@ const Admin = require('../models/admins')
 //routes for task
 
 router.post('/', Controller.createTask);
+router.get("/project/:projectId", Controller.getTasksByProjectId);
+
 router.get('/', Controller.getAllTasks);
 router.get('/:id', Controller.getTask);
 router.put('/:id', Controller.updateTask);
