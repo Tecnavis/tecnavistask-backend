@@ -14,6 +14,7 @@ const taskSchema = new Schema({
     status: { type: String, required: true },
     date: { type: Date, default: Date.now },
     endDate: { type: Date, default: Date.now },
+    taskId:{type:String,required:true}
 }); 
 
 

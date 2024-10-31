@@ -2,26 +2,42 @@ const Model = require('../models/task');
 const asyncHandler = require("express-async-handler");
 
 
-exports.createTask = asyncHandler(async (req, res) => {
-  const { email, task, project, priority, status, date, name, endDate } = req.body;
+const generateTaskId = async () => {
+  const lastTask = await Model.findOne().sort({ _id: -1 }).select('taskId');
   
-  try {
-    const newTask = await Model.create({ 
-      email, 
-      task, 
-      project, 
-      priority, 
-      name,  
-      status, 
-      date, 
-      endDate 
-    });
-  
-    res.status(200).json(newTask); // Return the created task
-  } catch (error) {
-    console.error("Error creating task:", error);
-    res.status(500).json({ message: "Error creating task" });
+  if (lastTask && lastTask.taskId) {
+      // Extract the numeric part, increment it, and format it
+      const lastIdNumber = parseInt(lastTask.taskId.substring(2), 10);
+      return `TS${lastIdNumber + 1}`;
+  } else {
+      // Default starting point if no tasks exist
+      return 'TS1000';
   }
+};
+
+exports.createTask = asyncHandler(async (req, res) => {
+const { email, task, project, priority, status, date, name, endDate } = req.body;
+
+try {
+  const taskId = await generateTaskId(); 
+
+  const newTask = await Model.create({ 
+    email, 
+    task, 
+    project, 
+    priority, 
+    name,  
+    status, 
+    date, 
+    endDate,
+    taskId 
+  });
+
+  res.status(200).json(newTask); 
+} catch (error) {
+  console.error("Error creating task:", error);
+  res.status(500).json({ message: "Error creating task" });
+}
 });
 
 
@@ -84,7 +100,7 @@ exports.updateTaskStatus = async (req, res) => {
         // Find the task and update the description array
         const task = await Model.findByIdAndUpdate(
             taskId,
-            { $push: { description: newDescription } },
+            { $push: { task: newDescription } },
             { new: true } // Return the updated document
         );
 
