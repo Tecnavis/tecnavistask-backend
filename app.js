@@ -12,6 +12,7 @@ var admin = require('./routes/admins')
 var task = require('./routes/task')
 var project = require('./routes/project')
 var notification = require('./routes/notification')
+var comment = require('./routes/comment') 
 connectDB()
 
 var app = express();
@@ -38,6 +39,7 @@ app.use('/admin', admin);
 app.use('/task', task);
 app.use('/notification', notification);
 app.use('/project', project);
+app.use('/comment', comment);
 
 
 
