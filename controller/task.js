@@ -76,14 +76,25 @@ exports.getTask = asyncHandler(async (req, res) => {
     res.status(200).json(task); 
 })
 
-// Update task
 exports.updateTask = asyncHandler(async (req, res) => {
-    const { staff, email, task, project, priority, status, date, endDate } = req.body;
-    const tasks = await Model.findByIdAndUpdate(req.params.id, { staff, email, task, project, priority, status, date, endDate }, {
-        new: true
-    });
-    res.status(200).json(tasks);
-})
+  const { staff, email, tasks, project, priority, status, date, endDate } = req.body;
+  const updatedTask = await Model.findByIdAndUpdate(req.params.id, {
+      staff,
+      email,
+      tasks, // The updated tasks array will be passed here
+      project,
+      priority,
+      status,
+      date,
+      endDate
+  }, {
+      new: true,
+      runValidators: true // Validate the update
+  });
+
+  res.status(200).json(updatedTask);
+});
+
 
 // Delete task
 exports.deleteTask = asyncHandler(async (req, res) => {

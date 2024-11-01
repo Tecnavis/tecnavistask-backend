@@ -14,13 +14,13 @@ const storage = multer.diskStorage({
 });
 
 var upload = multer({ storage: storage });
+router.put('/:id', upload.array("images"), Controller.updateTask);
 
 router.post('/',upload.array("images"), Controller.createTask);
 router.get("/project/:projectId", Controller.getTasksByProjectId);
 
 router.get('/', Controller.getAllTasks);
 router.get('/:id', Controller.getTask);
-router.put('/:id', Controller.updateTask);
 router.delete('/:id', Controller.deleteTask);
 router.delete('/', Controller.deleteAllTasks);
 router.post("/add-description",Controller.addDescriptionToTask);
