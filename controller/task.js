@@ -29,43 +29,41 @@ exports.getTasksByProjectId = async (req, res) => {
 };
 
 
-const generateTaskId = async () => {
-  const lastTask = await Model.findOne().sort({ _id: -1 }).select('taskId');
+const generateTaskId = async (count) => {
+  const lastTask = await Model.findOne().sort({ _id: -1 }).select("taskId");
+  const baseId = lastTask && lastTask.taskId ? parseInt(lastTask.taskId.substring(2), 10) : 1000;
   
-  if (lastTask && lastTask.taskId) {
-      // Extract the numeric part, increment it, and format it
-      const lastIdNumber = parseInt(lastTask.taskId.substring(2), 10);
-      return `TS${lastIdNumber + 1}`;
-  } else {
-      // Default starting point if no tasks exist
-      return 'TS1000';
-  }
+  // Generate `count` number of unique task IDs
+  const taskIds = Array.from({ length: count }, (_, i) => `TS${baseId + i + 1}`);
+  return taskIds;
 };
 
 exports.createTask = asyncHandler(async (req, res) => {
-const { email, task, project, priority, status, date, name, endDate } = req.body;
+  const { email, tasks, project, priority, status, date, name, endDate } = req.body;
 
-try {
-  const taskId = await generateTaskId(); 
+  try {
+    const taskIds = await generateTaskId(tasks.length); // Generate task IDs for each sub-task
 
-  const newTask = await Model.create({ 
-    email, 
-    task, 
-    project, 
-    priority, 
-    name,  
-    status, 
-    date, 
-    endDate,
-    taskId 
-  });
+    const taskDocuments = tasks.map((taskContent, index) => ({
+      email,
+      task: taskContent,
+      project,
+      priority,
+      name,
+      status,
+      date,
+      endDate,
+      taskId: taskIds[index] // Assign each generated taskId
+    }));
 
-  res.status(200).json(newTask); 
-} catch (error) {
-  console.error("Error creating task:", error);
-  res.status(500).json({ message: "Error creating task" });
-}
+    const newTasks = await Model.insertMany(taskDocuments);
+    res.status(200).json(newTasks); 
+  } catch (error) {
+    console.error("Error creating tasks:", error);
+    res.status(500).json({ message: "Error creating tasks" });
+  }
 });
+
 
 
 // Get single task
