@@ -42,18 +42,22 @@ exports.createTask = asyncHandler(async (req, res) => {
   const { email, tasks, project, priority, status, date, name, endDate } = req.body;
 
   try {
-    const taskIds = await generateTaskId(tasks.length); // Generate task IDs for each sub-task
+    const taskIds = await generateTaskId(tasks.length);
 
     const taskDocuments = tasks.map((taskContent, index) => ({
       email,
-      task: taskContent,
       project,
       priority,
       name,
       status,
       date,
       endDate,
-      taskId: taskIds[index] // Assign each generated taskId
+      taskId: taskIds[index],
+      tasks: {
+        task: taskContent.task,
+        description: taskContent.description,
+        image: req.files[index] ? req.files[index].path : null
+      }
     }));
 
     const newTasks = await Model.insertMany(taskDocuments);

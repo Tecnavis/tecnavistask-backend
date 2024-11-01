@@ -3,8 +3,19 @@ var router = express.Router();
 const Controller = require('../controller/task')
 const Admin = require('../models/admins')
 //routes for task
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/images");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
 
-router.post('/', Controller.createTask);
+var upload = multer({ storage: storage });
+
+router.post('/',upload.array("images"), Controller.createTask);
 router.get("/project/:projectId", Controller.getTasksByProjectId);
 
 router.get('/', Controller.getAllTasks);
