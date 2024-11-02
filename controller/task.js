@@ -1,5 +1,7 @@
 const Model = require('../models/task');
 const asyncHandler = require("express-async-handler");
+const path = require('path'); // Import path module
+
 // Get all tasks
 exports.getAllTasks = asyncHandler(async (req, res) => {
   const tasks = await Model.find().populate('project'); // Ensure this is correct
@@ -38,6 +40,7 @@ const generateTaskId = async (count) => {
   return taskIds;
 };
 
+
 exports.createTask = asyncHandler(async (req, res) => {
   const { email, tasks, project, priority, status, date, name, endDate } = req.body;
 
@@ -56,7 +59,7 @@ exports.createTask = asyncHandler(async (req, res) => {
       tasks: {
         task: taskContent.task,
         description: taskContent.description,
-        image: req.files[index] ? req.files[index].path : null
+        image: req.files[index] ? path.basename(req.files[index].path) : null // Get only filename
       }
     }));
 
