@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
 });
 
 var upload = multer({ storage: storage });
-router.put('/:id', upload.array("images"), Controller.updateTask);
+router.put('/:id', upload.array("images",10), Controller.updateTask);
 
 router.post('/',upload.array("images"), Controller.createTask);
 router.get("/project/:projectId", Controller.getTasksByProjectId);

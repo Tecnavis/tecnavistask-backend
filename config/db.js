@@ -5,7 +5,7 @@ function connectDB() {
     .connect(process.env.MONGO_URL, {})
     .then(() => {
       console.log("Database connected successfully");
-      console.log("http://localhost:3002");
+      console.log("http://localhost:3000");
     })
     .catch((err) => {
       console.log(err, "error occurred in database connection");

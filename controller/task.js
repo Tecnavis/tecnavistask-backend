@@ -81,22 +81,30 @@ exports.getTask = asyncHandler(async (req, res) => {
 
 exports.updateTask = asyncHandler(async (req, res) => {
   const { staff, email, tasks, project, priority, status, date, endDate } = req.body;
+  
+  // If images are uploaded, map the uploaded files to the task images
+  if (req.files && req.files.length > 0) {
+    tasks.forEach((task, index) => {
+      if (req.files[index]) {
+        task.image = req.files[index].filename; // Update the image filename for each task
+      }
+    });
+  }
   const updatedTask = await Model.findByIdAndUpdate(req.params.id, {
-      staff,
-      email,
-      tasks, // The updated tasks array will be passed here
-      project,
-      priority,
-      status,
-      date,
-      endDate
-  }, {
-      new: true,
-      runValidators: true // Validate the update
-  });
+    staff,
+    email,
+    tasks,
+    project,
+    priority,
+    status,
+    date,
+    endDate: endDate === "null" ? null : endDate // Convert string "null" to actual null
+});
+
 
   res.status(200).json(updatedTask);
 });
+
 
 
 // Delete task
