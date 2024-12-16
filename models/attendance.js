@@ -15,5 +15,4 @@ const attendanceSchema = new mongoose.Schema({
         sickLeave: { type: Number, default: 12 },       // 12 per year
     },
 });
-
 module.exports = mongoose.model("Attendance", attendanceSchema);

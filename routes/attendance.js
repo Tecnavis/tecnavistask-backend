@@ -6,6 +6,7 @@ router.post("/check-in", Controller.checkIn);
 router.post("/check-out", Controller.checkOut);
 router.post("/apply-leave", Controller.applyLeave);
 router.get("/:employeeId", Controller.getEmployeeAttendance);
+router.get("/status/:employeeId",Controller.getAttendanceStatus);
 
 
 module.exports = router;

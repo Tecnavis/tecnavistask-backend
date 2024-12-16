@@ -72,3 +72,25 @@ exports.applyLeave = async (req, res) => {
         res.status(500).json({ error: "Failed to apply leave" });
     }
 };
+
+exports.getAttendanceStatus = async (req, res) => {
+  const { employeeId } = req.params;
+
+  try {
+    const attendance = await Attendance.findOne({ employeeId }).sort({ date: -1 });
+    if (attendance) {
+      res.status(200).json({
+        success: true,
+        status: attendance.checkOutTime ? "checkedOut" : "checkedIn",
+      });
+    } else {
+      res.status(200).json({ success: true, status: "checkedOut" }); // Default to "checkedOut"
+    }
+  } catch (error) {
+    console.error("Error fetching attendance status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch attendance status.",
+    });
+  }
+};
