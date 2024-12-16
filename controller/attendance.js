@@ -4,9 +4,11 @@ exports.checkIn = async (req, res) => {
     const { employeeId } = req.body;
     try {
         const attendance = await Attendance.findOneAndUpdate(
-            { employee: employeeId, date: { $gte: new Date().setHours(0, 0, 0, 0) } }, // Same day record
-            { checkinTime: new Date() },
-            { new: true, upsert: true } // Create if not exists
+            { employee: employeeId, date: { $gte: new Date().setHours(0, 0, 0, 0) } },
+            {
+                $push: { records: { status: true, checkinTime: new Date() } },
+            },
+            { new: true, upsert: true }
         );
         res.json({ success: true, message: "Checked in successfully", attendance });
     } catch (error) {
@@ -18,8 +20,17 @@ exports.checkOut = async (req, res) => {
     const { employeeId } = req.body;
     try {
         const attendance = await Attendance.findOneAndUpdate(
-            { employee: employeeId, date: { $gte: new Date().setHours(0, 0, 0, 0) } }, // Same day record
-            { checkoutTime: new Date() },
+            {
+                employee: employeeId,
+                date: { $gte: new Date().setHours(0, 0, 0, 0) },
+                "records.status": true, // Find a record where status is checkedIn
+            },
+            {
+                $set: {
+                    "records.$.status": false,
+                    "records.$.checkoutTime": new Date(),
+                },
+            },
             { new: true }
         );
         if (!attendance) {
@@ -30,6 +41,8 @@ exports.checkOut = async (req, res) => {
         res.status(500).json({ success: false, message: "Check-out failed", error });
     }
 };
+
+
 
 // Get attendance history of an employee
 exports.getEmployeeAttendance = async (req, res) => {
