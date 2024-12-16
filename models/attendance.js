@@ -3,8 +3,8 @@ const mongoose = require("mongoose");
 const attendanceSchema = new mongoose.Schema({
     date: { type: Date, default: Date.now },
     employee: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
-    checkinTime: { type: Date },
-    checkoutTime: { type: Date },
+    checkinTime: { type: Date, default: null },
+    checkoutTime: { type: Date, default: null },
     leave: {
         type: String,
         enum: ["Monthly Permitted Leave", "Sick Leave", "Loss of Pay Leave"],

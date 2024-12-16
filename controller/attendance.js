@@ -1,38 +1,51 @@
 const Attendance = require("../models/attendance");
+
 exports.checkIn = async (req, res) => {
+    const { employeeId } = req.body;
     try {
-        const { employeeId } = req.body;
-        const today = new Date().toISOString().slice(0, 10); // Format: YYYY-MM-DD
-
-        let attendance = await Attendance.findOne({ employee: employeeId, date: today });
-
-        if (!attendance) {
-            attendance = await Attendance.create({ employee: employeeId, checkinTime: new Date() });
-            return res.status(201).json({ message: "Check-in successful", attendance });
-        } else {
-            return res.status(400).json({ message: "Already checked in today" });
-        }
+        const attendance = await Attendance.findOneAndUpdate(
+            { employee: employeeId, date: { $gte: new Date().setHours(0, 0, 0, 0) } }, // Same day record
+            { checkinTime: new Date() },
+            { new: true, upsert: true } // Create if not exists
+        );
+        res.json({ success: true, message: "Checked in successfully", attendance });
     } catch (error) {
-        res.status(500).json({ error: "Failed to check-in" });
+        res.status(500).json({ success: false, message: "Check-in failed", error });
     }
 };
 
 exports.checkOut = async (req, res) => {
+    const { employeeId } = req.body;
     try {
-        const { employeeId } = req.body;
-        const today = new Date().toISOString().slice(0, 10);
-
-        const attendance = await Attendance.findOne({ employee: employeeId, date: today });
-
-        if (attendance && !attendance.checkoutTime) {
-            attendance.checkoutTime = new Date();
-            await attendance.save();
-            return res.status(200).json({ message: "Check-out successful", attendance });
-        } else {
-            return res.status(400).json({ message: "Check-out failed. Either not checked in or already checked out." });
+        const attendance = await Attendance.findOneAndUpdate(
+            { employee: employeeId, date: { $gte: new Date().setHours(0, 0, 0, 0) } }, // Same day record
+            { checkoutTime: new Date() },
+            { new: true }
+        );
+        if (!attendance) {
+            return res.status(404).json({ success: false, message: "Check-in required before check-out" });
         }
+        res.json({ success: true, message: "Checked out successfully", attendance });
     } catch (error) {
-        res.status(500).json({ error: "Failed to check-out" });
+        res.status(500).json({ success: false, message: "Check-out failed", error });
+    }
+};
+
+// Get attendance history of an employee
+exports.getEmployeeAttendance = async (req, res) => {
+    const { employeeId } = req.params;
+
+    try {
+        const attendanceRecords = await Attendance.find({ employee: employeeId }).sort({ date: -1 });
+
+        if (!attendanceRecords) {
+            return res.status(404).json({ success: false, message: "No attendance records found" });
+        }
+
+        res.status(200).json({ success: true, data: attendanceRecords });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error" });
     }
 };
 exports.applyLeave = async (req, res) => {
