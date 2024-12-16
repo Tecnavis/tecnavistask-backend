@@ -13,6 +13,7 @@ var task = require('./routes/task')
 var project = require('./routes/project')
 var notification = require('./routes/notification')
 var comment = require('./routes/comment') 
+var attendance = require('./routes/attendance')
 connectDB()
 
 var app = express();
@@ -40,6 +41,7 @@ app.use('/task', task);
 app.use('/notification', notification);
 app.use('/project', project);
 app.use('/comment', comment);
+app.use('/attendance', attendance);
 
 
 
