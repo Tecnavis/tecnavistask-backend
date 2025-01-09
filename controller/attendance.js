@@ -65,26 +65,56 @@ exports.applyLeave = async (req, res) => {
     try {
         const { employeeId, leaveType } = req.body;
 
-        const attendance = await Attendance.findOne({ employee: employeeId });
+        if (!employeeId || !leaveType) {
+            return res.status(400).json({ message: "Missing employeeId or leaveType" });
+        }
 
-        if (!attendance) return res.status(404).json({ message: "Attendance record not found" });
+        // Fetch attendance for the given employee
+        let attendance = await Attendance.findOne({ employee: employeeId });
 
-        if (leaveType === "Monthly Permitted Leave" && attendance.remainingLeaves.monthlyPermitted > 0) {
+        if (!attendance) {
+            // Create a new attendance record if not found
+            attendance = new Attendance({
+                employee: employeeId,
+                leave: leaveType,
+            });
+
+            // Adjust leave balance if required
+            if (leaveType === "Monthly Permitted Leave") {
+                attendance.remainingLeaves.monthlyPermitted -= 1;
+            } else if (leaveType === "Sick Leave") {
+                attendance.remainingLeaves.sickLeave -= 1;
+            }
+
+            await attendance.save();
+            return res.status(201).json({ message: "New attendance record created with leave applied", attendance });
+        }
+
+        // Handle the leave logic
+        if (leaveType === "Loss of Pay Leave") {
+            // Loss of Pay leave does not affect remainingLeaves
+        } else if (leaveType === "Monthly Permitted Leave" && attendance.remainingLeaves.monthlyPermitted > 0) {
             attendance.remainingLeaves.monthlyPermitted -= 1;
         } else if (leaveType === "Sick Leave" && attendance.remainingLeaves.sickLeave > 0) {
             attendance.remainingLeaves.sickLeave -= 1;
-        } else if (leaveType !== "Loss of Pay Leave") {
-            return res.status(400).json({ message: "Leave limit exceeded" });
+        } else {
+            return res.status(400).json({ message: "Leave limit exceeded or invalid leave type" });
         }
 
+        // Update the leave type
         attendance.leave = leaveType;
+
+        // Save updated attendance record
         await attendance.save();
 
         res.status(200).json({ message: "Leave applied successfully", attendance });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: "Failed to apply leave" });
     }
 };
+
+
 
 exports.getAttendanceStatus = async (req, res) => {
   const { employeeId } = req.params;
