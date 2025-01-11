@@ -129,3 +129,48 @@ exports.getAttendanceStatus = async (req, res) => {
     });
   }
 };
+// Fetch attendance records for a specific employee
+// exports.getAttendanceRecords = async (req, res) => {
+//     const { employeeId } = req.params;
+//     try {
+//       const attendanceRecords = await Attendance.find({ employee: employeeId });
+//       res.status(200).json({ success: true, data: attendanceRecords });
+//     } catch (error) {
+//       console.error("Error fetching attendance records:", error);
+//       res.status(500).json({ success: false, message: "Server Error" });
+//     }
+//   };
+  
+  // Edit check-in and check-out times for a specific record
+  exports.editAttendanceRecord = async (req, res) => {
+    const { recordId } = req.params;
+    const { checkinTime, checkoutTime } = req.body;
+  
+    try {
+      const attendance = await Attendance.findOneAndUpdate(
+        { "records._id": recordId },
+        {
+          $set: {
+            "records.$.checkinTime": checkinTime,
+            "records.$.checkoutTime": checkoutTime,
+          },
+        },
+        { new: true }
+      );
+  
+      if (!attendance) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Attendance record not found" });
+      }
+  
+      res.status(200).json({
+        success: true,
+        message: "Attendance record updated successfully",
+        data: attendance,
+      });
+    } catch (error) {
+      console.error("Error updating attendance record:", error);
+      res.status(500).json({ success: false, message: "Server Error" });
+    }
+  };
