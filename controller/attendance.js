@@ -69,42 +69,35 @@ exports.applyLeave = async (req, res) => {
             return res.status(400).json({ message: "Missing employeeId or leaveType" });
         }
 
-        // Fetch attendance for the given employee
-        let attendance = await Attendance.findOne({ employee: employeeId });
+        const today = new Date().toISOString().split("T")[0]; // Current date without time
+        let attendance = await Attendance.findOne({
+            employee: employeeId,
+            date: { $gte: new Date(today), $lt: new Date(today + "T23:59:59.999Z") },
+        });
+
+        if (attendance && attendance.leave) {
+            return res.status(400).json({ message: "Leave already applied for today." });
+        }
 
         if (!attendance) {
-            // Create a new attendance record if not found
-            attendance = new Attendance({
-                employee: employeeId,
-                leave: leaveType,
-            });
+            attendance = new Attendance({ employee: employeeId });
+        }
 
-            // Adjust leave balance if required
-            if (leaveType === "Monthly Permitted Leave") {
-                attendance.remainingLeaves.monthlyPermitted -= 1;
-            } else if (leaveType === "Sick Leave") {
-                attendance.remainingLeaves.sickLeave -= 1;
+        // Handle leave deduction logic
+        if (leaveType === "Monthly Permitted Leave") {
+            if (attendance.remainingLeaves.monthlyPermitted <= 0) {
+                return res.status(400).json({ message: "No Monthly Permitted Leaves remaining." });
             }
-
-            await attendance.save();
-            return res.status(201).json({ message: "New attendance record created with leave applied", attendance });
-        }
-
-        // Handle the leave logic
-        if (leaveType === "Loss of Pay Leave") {
-            // Loss of Pay leave does not affect remainingLeaves
-        } else if (leaveType === "Monthly Permitted Leave" && attendance.remainingLeaves.monthlyPermitted > 0) {
             attendance.remainingLeaves.monthlyPermitted -= 1;
-        } else if (leaveType === "Sick Leave" && attendance.remainingLeaves.sickLeave > 0) {
+        } else if (leaveType === "Sick Leave") {
+            if (attendance.remainingLeaves.sickLeave <= 0) {
+                return res.status(400).json({ message: "No Sick Leaves remaining." });
+            }
             attendance.remainingLeaves.sickLeave -= 1;
-        } else {
-            return res.status(400).json({ message: "Leave limit exceeded or invalid leave type" });
-        }
+        } // Loss of Pay Leave does not affect remainingLeaves
 
-        // Update the leave type
         attendance.leave = leaveType;
-
-        // Save updated attendance record
+        attendance.date = new Date(); // Apply leave for today
         await attendance.save();
 
         res.status(200).json({ message: "Leave applied successfully", attendance });
@@ -113,7 +106,6 @@ exports.applyLeave = async (req, res) => {
         res.status(500).json({ error: "Failed to apply leave" });
     }
 };
-
 
 
 exports.getAttendanceStatus = async (req, res) => {
